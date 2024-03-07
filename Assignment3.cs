@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -91,9 +91,8 @@ public static class Assignment3
 		sender.Shutdown(SocketShutdown.Both);
 	}
 
-	private static void Server()
+	public static void Server()
 	{
-		throw new NotImplementedException("Create the server software by following these steps for Assignment 3");
 
 		// Create a TCP stream socket bound to 127.0.0.1 and port 7777 to listen for incoming clients
 		var ipAddress = IPAddress.Parse("127.0.0.1");
@@ -101,6 +100,7 @@ public static class Assignment3
 
 		using var listener = new Socket(ipAddress.AddressFamily,SocketType.Stream, ProtocolType.Tcp);
 		listener.Bind(localEp);
+		listener.Listen();
 
 		var buffer = new byte[1024];
 
@@ -114,30 +114,33 @@ public static class Assignment3
 			// Generate a random integer from 1 to 99 (inclusive)
 			var rand = new Random().Next(100);
 		// Send a 'hello' message to the client
-			Console.WriteLine("Hello!\r\n");
+			Console.WriteLine("hello\r\n");
 		// Loop forever to receive new messages from this client
 			for(; ; ){
 				Console.WriteLine("Waiting for message...");
 		// 		Receive an incoming message and decode it using ASCII encoding
-				var textReceived = Encoding.ASCII.GetString(buffer, 0, numBytesReceived).Parse("\t");
-				Switch(textReceived[0]){
-		// 		If the message is a 'guess' message, parse the client's guess, then...
-					case "guess"
+				var textReceived = Encoding.ASCII.GetString(buffer, 0, numBytesReceived).Split("\t");
+				switch(textReceived[0]){
+					// 		If the message is a 'guess' message, parse the client's guess, then...
+					case "guess":
 		// 			...If their guess matches the answer, send a 'correct' message to them and disconnect from the client
-						if(TryParse(textReceived[1], out int guess) == rand) Console.WriteLine("correct\r\n");
+						if(int.Parse(textReceived[1]) == rand) Console.WriteLine("correct\r\n");
 		// 			...If their guess is greater than the answer, send a 'too-high' message and continue listening
-						if(TryParse(textReceived[1], out int guess) > rand) Console.WriteLine("too-high\r\n");
+						else if(int.Parse(textReceived[1]) > rand) Console.WriteLine("too-high\r\n");
 		// 			...If their guess is less than the answer, send a 'too-low' message and continue listening
-						if(TryParse(textReceived[1], out int guess) < rand) Console.WriteLine("too-low\r\n");
-		// 		If the message is a 'quit' message, disconnect from this client and start listening again
+						else Console.WriteLine("too-low\r\n");
+						// 		If the message is a 'quit' message, disconnect from this client and start listening again
+						break;
 					case "quit":
-					break;
+						Console.WriteLine("Game Over. Thanks for playing!\r\n");
+                        handler.Shutdown(SocketShutdown.Both);
+						break;
 					default:
-					Console.WriteLine("Unexpected Command. Try again\r\n");
+						Console.WriteLine("Unexpected Command. Try again\r\n");
+						break;
 				}
 				
 			}
-			Console.WriteLine("Game Over. Thanks for playing!\r\n");
 		}
 	}
 }
