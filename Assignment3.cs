@@ -119,8 +119,8 @@ public static class Assignment3
 			for(; ; ){
 				Console.WriteLine("Waiting for message...");
 		// 		Receive an incoming message and decode it using ASCII encoding
-				var textReceived = Encoding.ASCII.GetString(buffer, 0, numBytesReceived);
-
+				var textReceived = Encoding.ASCII.GetString(buffer, 0, numBytesReceived).Parse("\t");
+				
 				
 			}
 
