@@ -114,29 +114,30 @@ public static class Assignment3
 			// Generate a random integer from 1 to 99 (inclusive)
 			var rand = new Random().Next(100);
 		// Send a 'hello' message to the client
-			Console.WriteLine("Hello!");
+			Console.WriteLine("Hello!\r\n");
 		// Loop forever to receive new messages from this client
 			for(; ; ){
 				Console.WriteLine("Waiting for message...");
 		// 		Receive an incoming message and decode it using ASCII encoding
 				var textReceived = Encoding.ASCII.GetString(buffer, 0, numBytesReceived).Parse("\t");
-				
+				Switch(textReceived[0]){
+		// 		If the message is a 'guess' message, parse the client's guess, then...
+					case "guess"
+		// 			...If their guess matches the answer, send a 'correct' message to them and disconnect from the client
+						if(TryParse(textReceived[1], out int guess) == rand) Console.WriteLine("correct\r\n");
+		// 			...If their guess is greater than the answer, send a 'too-high' message and continue listening
+						if(TryParse(textReceived[1], out int guess) > rand) Console.WriteLine("too-high\r\n");
+		// 			...If their guess is less than the answer, send a 'too-low' message and continue listening
+						if(TryParse(textReceived[1], out int guess) < rand) Console.WriteLine("too-low\r\n");
+		// 		If the message is a 'quit' message, disconnect from this client and start listening again
+					case "quit":
+					break;
+					default:
+					Console.WriteLine("Unexpected Command. Try again\r\n");
+				}
 				
 			}
-
-
-
-
-
-		// 		If the message is a 'quit' message, disconnect from this client and start listening again
-
-		// 		If the message is a 'guess' message, parse the client's guess, then...
-
-		// 			...If their guess matches the answer, send a 'correct' message to them and disconnect from the client
-
-		// 			...If their guess is greater than the answer, send a 'too-high' message and continue listening
-
-		// 			...If their guess is less than the answer, send a 'too-low' message and continue listening
+			Console.WriteLine("Game Over. Thanks for playing!\r\n");
 		}
 	}
 }
