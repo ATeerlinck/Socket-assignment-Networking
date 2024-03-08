@@ -33,7 +33,6 @@ public static class Assignment3
 			Console.WriteLine("Server is not ready yet");
 			return;
 		}
-
 		// Loop forever to receive user input
 		for (; ; )
 		{
@@ -93,12 +92,11 @@ public static class Assignment3
 
 	public static void Server()
 	{
-
 		// Create a TCP stream socket bound to 127.0.0.1 and port 7777 to listen for incoming clients
 		var ipAddress = IPAddress.Parse("127.0.0.1");
 		var localEp = new IPEndPoint(ipAddress, 7777);
 
-		using var listener = new Socket(ipAddress.AddressFamily,SocketType.Stream, ProtocolType.Tcp);
+		using var listener = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 		listener.Bind(localEp);
 		listener.Listen();
 
@@ -110,36 +108,41 @@ public static class Assignment3
 			Console.WriteLine("Waiting...");
 			// Accept an incoming connection, creating a socket for that client
 			using var handler = listener.Accept();
-			var numBytesReceived = handler.Receive(buffer);
 			// Generate a random integer from 1 to 99 (inclusive)
 			var rand = new Random().Next(100);
-		// Send a 'hello' message to the client
-			Console.WriteLine("hello\r\n");
-		// Loop forever to receive new messages from this client
-			for(; ; ){
+			// Send a 'hello' message to the client
+			var bytes = Encoding.ASCII.GetBytes("hello\r\n");
+			handler.Send(bytes);
+			// Loop forever to receive new messages from this client
+			for (; ; )
+			{
 				Console.WriteLine("Waiting for message...");
-		// 		Receive an incoming message and decode it using ASCII encoding
+				// 		Receive an incoming message and decode it using ASCII encoding
+				var numBytesReceived = handler.Receive(buffer);
 				var textReceived = Encoding.ASCII.GetString(buffer, 0, numBytesReceived).Split("\t");
-				switch(textReceived[0]){
+
+				Console.WriteLine("Message recieved.");
+				switch (textReceived[0])
+				{
 					// 		If the message is a 'guess' message, parse the client's guess, then...
 					case "guess":
-		// 			...If their guess matches the answer, send a 'correct' message to them and disconnect from the client
-						if(int.Parse(textReceived[1]) == rand) Console.WriteLine("correct\r\n");
-		// 			...If their guess is greater than the answer, send a 'too-high' message and continue listening
-						else if(int.Parse(textReceived[1]) > rand) Console.WriteLine("too-high\r\n");
-		// 			...If their guess is less than the answer, send a 'too-low' message and continue listening
-						else Console.WriteLine("too-low\r\n");
-						// 		If the message is a 'quit' message, disconnect from this client and start listening again
+						// 			...If their guess matches the answer, send a 'correct' message to them and disconnect from the client
+						if (int.Parse(textReceived[1]) == rand) bytes = Encoding.ASCII.GetBytes("correct\r\n");
+						// 			...If their guess is greater than the answer, send a 'too-high' message and continue listening
+						else if (int.Parse(textReceived[1]) > rand) bytes = Encoding.ASCII.GetBytes("too-high\r\n");
+						// 			...If their guess is less than the answer, send a 'too-low' message and continue listening
+						else bytes = Encoding.ASCII.GetBytes("too-low\r\n");
+						handler.Send(bytes);
 						break;
-					case "quit":
-						Console.WriteLine("Game Over. Thanks for playing!\r\n");
-                        handler.Shutdown(SocketShutdown.Both);
+					// 		If the message is a 'quit' message, disconnect from this client and start listening again
+					case "quit\r\n":
+						handler.Shutdown(SocketShutdown.Both);
 						break;
 					default:
-						Console.WriteLine("Unexpected Command. Try again\r\n");
 						break;
 				}
-				
+				// 			...If their guess matches the answer, send a 'correct' message to them and disconnect from the client
+				if (int.Parse(textReceived[1]) == rand) break;
 			}
 		}
 	}
