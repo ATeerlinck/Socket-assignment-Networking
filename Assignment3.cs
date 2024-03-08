@@ -142,7 +142,7 @@ public static class Assignment3
 						break;
 				}
 				// 			...If their guess matches the answer, send a 'correct' message to them and disconnect from the client
-				if (int.Parse(textReceived[1]) == rand) break;
+				if (int.Parse(textReceived[1]) == rand || textReceived[0] == "quit\r\n") break;
 			}
 		}
 	}
